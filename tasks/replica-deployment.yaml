@@ -1,0 +1,55 @@
+# install freeipa client
+- name: configure and start freeipa client
+  shell: |
+    ipa-client-install \
+      --unattended \
+      --principal admin \
+      --password {{ admin_password }} \
+      --hostname {{ inventory_hostname }} \
+      --mkhomedir \
+      --server {{ groups['master'][0] }} \
+      --domain {{ domain }} \
+      --realm {{ realm }} \
+      --enable-dns-updates
+  args:
+    executable: /bin/bash
+  when: inventory_hostname == groups['replica'][0]
+
+# establish a kerberos ticket for further commands
+- name: request kerberos ticket for admin user
+  expect:
+    command: kinit admin
+    responses:
+      Password for .*: "{{ admin_password }}"
+  become: no
+  when: inventory_hostname == groups['master'][0]
+
+# prep for future replica joining to master
+- name: add replica server hosts name to master
+  shell: ipa hostgroup-add-member ipaservers --hosts {{ groups['replica'][0] }}
+  args:
+    executable: /bin/bash
+  become: no
+  when: inventory_hostname == groups['master'][0]
+
+# install freeipa replica
+- name: configure and start freeipa replica - ldap/dns promotion
+  shell: |
+    ipa-replica-install \
+      --unattended \
+      --setup-dns \
+      --auto-reverse \
+      --mkhomedir \
+      --forward-policy first \
+      --forwarder {{ dns_forwarder_1 }} \
+      --forwarder {{ dns_forwarder_2 }}
+  args:
+    executable: /bin/bash
+  when: inventory_hostname == groups['replica'][0]
+
+  # reboot host machine gracefully
+- name: wait for hosts to reboot and validate operational
+  reboot:
+    reboot_timeout: 300
+    post_reboot_delay: 10
+  when: inventory_hostname == groups['replica'][0]

@@ -1,0 +1,9 @@
+---
+# install prereqs for freeipa
+- include_tasks: prereq-install.yaml
+
+# master idm server deployment
+- include_tasks: master-deployment.yaml
+
+# replica idm server deployment
+- include_tasks: replica-deployment.yaml

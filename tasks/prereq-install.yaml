@@ -1,0 +1,36 @@
+# install freeipa server libraries
+- name: install freeipa server libraries
+  dnf:
+    name: 
+      - '@idm:DL1/server'
+      - '@idm:DL1/client'
+      - '@idm:DL1/dns'
+      - '@idm:DL1/adtrust'
+    state: present
+    update_cache: yes
+
+# configure firewall for freeipa services 
+- name: configuring freeipa firewalld services
+  firewalld:
+    service: "{{ item }}"
+    zone: public
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - freeipa-4
+    - ntp
+    - dns
+    - dns-over-tls
+
+# resetart firewalld to apply changes
+- name: restart firewalld to apply rules
+  systemd:
+    name: firewalld
+    state: restarted
+
+# install dependencies for pexpect
+- name: installing python pexpect package for expect module
+  shell: pip3 install pexpect 
+  args:
+    executable: /bin/bash

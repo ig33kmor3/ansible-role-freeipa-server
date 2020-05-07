@@ -1,0 +1,25 @@
+# install freeipa server
+- name: configure and start freeipa server
+  shell: |
+    ipa-server-install \
+      --unattended \
+      --realm {{ realm }} \
+      --domain {{ domain }} \
+      --ds-password {{ ds_password }} \
+      --admin-password {{ admin_password }} \
+      --setup-dns \
+      --mkhomedir \
+      --auto-reverse \
+      --forward-policy first \
+      --forwarder {{ dns_forwarder_1 }} \
+      --forwarder {{ dns_forwarder_2 }}
+  args:
+    executable: /bin/bash
+  when: inventory_hostname == groups['master'][0]
+
+# reboot host machine gracefully
+- name: wait for hosts to reboot and validate operational
+  reboot:
+    reboot_timeout: 300
+    post_reboot_delay: 10
+  when: inventory_hostname == groups['master'][0]

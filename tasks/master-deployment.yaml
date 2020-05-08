@@ -5,8 +5,8 @@
       --unattended \
       --realm {{ realm }} \
       --domain {{ domain }} \
-      --ds-password {{ ds_password }} \
-      --admin-password {{ admin_password }} \
+      --ds-password "{{ ds_password }}" \
+      --admin-password "{{ admin_password }}" \
       --setup-dns \
       --mkhomedir \
       --auto-reverse \

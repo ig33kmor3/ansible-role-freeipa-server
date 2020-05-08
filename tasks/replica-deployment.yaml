@@ -4,7 +4,7 @@
     ipa-client-install \
       --unattended \
       --principal admin \
-      --password {{ admin_password }} \
+      --password "{{ admin_password }}" \
       --hostname {{ inventory_hostname }} \
       --mkhomedir \
       --server {{ groups['master'][0] }} \
